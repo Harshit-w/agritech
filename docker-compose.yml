@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  agritech:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_DEBUG=0
+      - DEFAULT_LAT=29.500667
+      - DEFAULT_LON=79.542889
+      - DEFAULT_CITY=Bageshwar, Uttarakhand, India
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/health')"]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  default:
+    name: agritech-net

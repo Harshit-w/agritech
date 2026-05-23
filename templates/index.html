@@ -1,0 +1,1753 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml" />
+    <title>AgriTech — Smart Farm Intelligence</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="/static/css/style.css?v=20260426100000" />
+  </head>
+  <body>
+    <div class="shell">
+      <!-- ═══ SIDEBAR ═══ -->
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-icon">🌱</div>
+          <div>
+            <div class="brand-name">AgriTech</div>
+            <div class="brand-sub">Smart Farm Intelligence</div>
+          </div>
+        </div>
+
+        <!-- LOCATION WIDGET — top left sidebar -->
+        <div class="loc-widget" id="loc-widget">
+          <div class="loc-icon">📍</div>
+          <div class="loc-info">
+            <div class="loc-city" id="loc-city-name">Bageshwar</div>
+            <div class="loc-coords" id="loc-coords">29.50°N, 79.54°E</div>
+            <div class="loc-status" id="loc-status">📍 Default location</div>
+          </div>
+          <button
+            class="loc-btn"
+            onclick="requestLocation()"
+            title="Use my GPS location"
+          >
+            🎯
+          </button>
+        </div>
+
+        <nav class="nav">
+          <div class="nav-section">Monitor</div>
+          <div class="nav-item active" data-tab="dashboard">
+            <span class="ni">🏠</span>Dashboard
+          </div>
+          <div class="nav-item" data-tab="sensors">
+            <span class="ni">📡</span>Live Sensors
+          </div>
+          <div class="nav-item" data-tab="weather">
+            <span class="ni">🌤️</span>Weather
+          </div>
+          <div class="nav-section">AI Tools</div>
+          <div class="nav-item" data-tab="crop">
+            <span class="ni">🌾</span>Crop Advisor
+          </div>
+          <div class="nav-item" data-tab="disease">
+            <span class="ni">🔬</span>Disease AI
+          </div>
+          <div class="nav-item" data-tab="fertilizer">
+            <span class="ni">💊</span>Fertilizers
+          </div>
+          <div class="nav-item" data-tab="soil">
+            <span class="ni">🧪</span>Soil Lab
+          </div>
+          <div class="nav-section">Control</div>
+          <div class="nav-item" data-tab="maps">
+            <span class="ni">🗺️</span>Farm Maps
+          </div>
+          <div class="nav-item" data-tab="analytics">
+            <span class="ni">📈</span>Analytics
+          </div>
+          <div class="nav-item" data-tab="aichat">
+            <span class="ni">🤖</span>AI Assistant
+          </div>
+        </nav>
+        <div class="sidebar-footer">
+          <span class="live-dot"></span>Live · 8 sensors ·
+          <span id="footer-city">Bageshwar</span>
+        </div>
+      </aside>
+
+      <!-- ═══ LOCATION MODAL ═══ -->
+      <div
+        id="location-modal"
+        class="modal"
+        style="
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          background: rgba(0, 0, 0, 0.7);
+          z-index: 9999;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <div
+          style="
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 1.5rem;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                font-weight: 600;
+                font-size: 16px;
+              "
+            >
+              <span style="color: #2dd4bf">●</span> Change Location / Area
+            </div>
+            <button
+              onclick="closeLocationModal()"
+              style="
+                background: none;
+                border: none;
+                color: #888;
+                font-size: 20px;
+                cursor: pointer;
+                padding: 0;
+              "
+            >
+              ✕
+            </button>
+          </div>
+
+          <div
+            style="
+              display: flex;
+              gap: 0.5rem;
+              border-bottom: 1px solid #333;
+              margin-bottom: 1.5rem;
+            "
+          >
+            <button
+              class="loc-tab-btn active"
+              onclick="switchLocTab('name')"
+              style="
+                flex: 1;
+                padding: 0.8rem;
+                border: none;
+                background: none;
+                color: #2dd4bf;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+                border-bottom: 2px solid #2dd4bf;
+              "
+            >
+              ● BY NAME
+            </button>
+            <button
+              class="loc-tab-btn"
+              onclick="switchLocTab('coords')"
+              style="
+                flex: 1;
+                padding: 0.8rem;
+                border: none;
+                background: none;
+                color: #888;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+                border-bottom: 2px solid transparent;
+              "
+            >
+              📍 BY COORDINATES
+            </button>
+            <button
+              class="loc-tab-btn"
+              onclick="switchLocTab('saved')"
+              style="
+                flex: 1;
+                padding: 0.8rem;
+                border: none;
+                background: none;
+                color: #888;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+                border-bottom: 2px solid transparent;
+              "
+            >
+              ⭐ SAVED PLACES
+            </button>
+          </div>
+
+          <div id="loc-tab-name" style="display: block">
+            <div style="margin-bottom: 1rem">
+              <label
+                style="
+                  font-size: 11px;
+                  color: #888;
+                  text-transform: uppercase;
+                  font-weight: 600;
+                "
+                >Search Place Name</label
+              >
+              <input
+                type="text"
+                id="loc-search-name"
+                placeholder="e.g., Almora"
+                style="
+                  width: 100%;
+                  padding: 0.7rem;
+                  margin-top: 0.5rem;
+                  background: #222;
+                  border: 1px solid #444;
+                  border-radius: 6px;
+                  color: #fff;
+                  font-size: 13px;
+                "
+              />
+            </div>
+            <button
+              class="btn btn-pri btn-full"
+              onclick="searchLocationByName()"
+            >
+              🔍 SEARCH
+            </button>
+            <div id="loc-search-result" style="margin-top: 1rem"></div>
+          </div>
+
+          <div id="loc-tab-coords" style="display: none">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.8rem;
+                margin-bottom: 1rem;
+              "
+            >
+              <div>
+                <label
+                  style="
+                    font-size: 11px;
+                    color: #888;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                  "
+                  >Latitude</label
+                >
+                <input
+                  type="number"
+                  id="loc-input-lat"
+                  value="29.500667"
+                  step="0.001"
+                  style="
+                    width: 100%;
+                    padding: 0.7rem;
+                    margin-top: 0.5rem;
+                    background: #222;
+                    border: 1px solid #444;
+                    border-radius: 6px;
+                    color: #fff;
+                    font-size: 13px;
+                  "
+                />
+              </div>
+              <div>
+                <label
+                  style="
+                    font-size: 11px;
+                    color: #888;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                  "
+                  >Longitude</label
+                >
+                <input
+                  type="number"
+                  id="loc-input-lon"
+                  value="79.542889"
+                  step="0.001"
+                  style="
+                    width: 100%;
+                    padding: 0.7rem;
+                    margin-top: 0.5rem;
+                    background: #222;
+                    border: 1px solid #444;
+                    border-radius: 6px;
+                    color: #fff;
+                    font-size: 13px;
+                  "
+                />
+              </div>
+            </div>
+            <button class="btn btn-pri btn-full" onclick="applyCoordinates()">
+              📍 APPLY COORDINATES
+            </button>
+          </div>
+
+          <div
+            id="loc-tab-saved"
+            style="
+              display: none;
+              color: #888;
+              text-align: center;
+              padding: 2rem;
+            "
+          >
+            <p>No saved places yet</p>
+          </div>
+
+          <div
+            style="
+              font-size: 10px;
+              color: #666;
+              margin-top: 1.5rem;
+              border-top: 1px solid #333;
+              padding-top: 1rem;
+              text-align: center;
+            "
+          >
+            💡 4 methods: City name · Decimal (29.5, 79.5) · DMS (29°30'02.1\"N)
+            · GPS
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ MAIN ═══ -->
+      <div class="main">
+        <div class="topbar">
+          <button id="menu-btn" class="menu-btn" onclick="toggleSidebar()">
+            ☰
+          </button>
+          <div class="topbar-title">
+            <h1 id="page-title">Farm Dashboard</h1>
+            <p id="page-sub">Real-time monitoring and AI insights</p>
+          </div>
+          <div class="weather-pill" onclick="goTab('weather')">
+            <span id="tw-icon">🌤️</span>
+            <b id="tw-temp">--°C</b>
+            <span id="tw-cond" class="tw-cond">Loading...</span>
+          </div>
+          <button
+            class="btn btn-sec btn-sm"
+            onclick="openLocationModal()"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.4rem;
+              height: 32px;
+              padding: 0.4rem 0.8rem;
+            "
+          >
+            🌍 Change Location
+          </button>
+          <div class="loc-pill">
+            📍 <span id="topbar-city-pill">Bageshwar</span>
+          </div>
+          <div
+            id="live-indicator"
+            class="live-dot"
+            style="
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              background: #22c55e;
+              margin-left: 0.5rem;
+              display: none;
+            "
+          ></div>
+          <span
+            id="live-label"
+            style="
+              font-size: 11px;
+              color: #888;
+              margin-left: 0.2rem;
+              display: none;
+            "
+            >LIVE</span
+          >
+          <div class="alert-bell" onclick="goTab('dashboard')">
+            🔔<span id="alert-badge" class="a-badge">0</span>
+          </div>
+          <div class="clock-pill" id="clock">--:--:--</div>
+        </div>
+
+        <div class="content">
+          <!-- ═══ DASHBOARD ═══ -->
+          <div class="tab-pane active dashboard-pane" id="tab-dashboard">
+            <div class="weather-banner" id="wb">
+              <div class="wb-left">
+                <span id="wb-icon" class="wb-icon">🌤️</span>
+                <div>
+                  <div class="wb-temp" id="wb-temp">--°C</div>
+                  <div class="wb-cond" id="wb-cond">
+                    Connecting to Open-Meteo...
+                  </div>
+                  <div class="wb-loc">
+                    📍 <span id="wb-banner-loc">Bageshwar, Uttarakhand</span> ·
+                    Live via Open-Meteo
+                  </div>
+                </div>
+              </div>
+              <div class="wb-stats">
+                <div class="wb-stat">
+                  <div class="wbs-l">Feels Like</div>
+                  <div class="wbs-v" id="wb-feel">--°C</div>
+                </div>
+                <div class="wb-stat">
+                  <div class="wbs-l">Humidity</div>
+                  <div class="wbs-v" id="wb-hum">--%</div>
+                </div>
+                <div class="wb-stat">
+                  <div class="wbs-l">Wind</div>
+                  <div class="wbs-v" id="wb-wind">-- km/h</div>
+                </div>
+                <div class="wb-stat">
+                  <div class="wbs-l">Precipitation</div>
+                  <div class="wbs-v" id="wb-prec">-- mm</div>
+                </div>
+                <div class="wb-stat">
+                  <div class="wbs-l">UV Index</div>
+                  <div class="wbs-v" id="wb-uv">--</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid4 mb1">
+              <div class="stat-card">
+                <div class="sc-bg">🌡️</div>
+                <div class="sc-label">Temperature</div>
+                <div class="sc-val">
+                  <span id="d-temp">--</span><span class="sc-unit">°C</span>
+                </div>
+                <div class="sc-src" id="d-temp-src">Connecting...</div>
+                <div class="sc-bar">
+                  <div
+                    id="d-temp-bar"
+                    class="sc-fill"
+                    style="
+                      width: 0%;
+                      background: linear-gradient(90deg, #16a34a, #4ade80);
+                    "
+                  ></div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="sc-bg">💧</div>
+                <div class="sc-label">Soil Moisture</div>
+                <div class="sc-val">
+                  <span id="d-moist">--</span><span class="sc-unit">%</span>
+                </div>
+                <div class="sc-src" id="d-moist-src">Sensor reading...</div>
+                <div class="sc-bar">
+                  <div
+                    id="d-moist-bar"
+                    class="sc-fill"
+                    style="
+                      width: 0%;
+                      background: linear-gradient(90deg, #2563eb, #60a5fa);
+                    "
+                  ></div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="sc-bg">🌫️</div>
+                <div class="sc-label">Humidity</div>
+                <div class="sc-val">
+                  <span id="d-hum">--</span><span class="sc-unit">%</span>
+                </div>
+                <div class="sc-src" id="d-hum-src">Connecting...</div>
+                <div class="sc-bar">
+                  <div
+                    id="d-hum-bar"
+                    class="sc-fill"
+                    style="
+                      width: 0%;
+                      background: linear-gradient(90deg, #0891b2, #67e8f9);
+                    "
+                  ></div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="sc-bg">⚗️</div>
+                <div class="sc-label">Soil pH</div>
+                <div class="sc-val"><span id="d-ph">--</span></div>
+                <div class="sc-src" id="d-ph-src">Sensor reading...</div>
+                <div class="sc-bar">
+                  <div
+                    id="d-ph-bar"
+                    class="sc-fill"
+                    style="
+                      width: 0%;
+                      background: linear-gradient(90deg, #9333ea, #c084fc);
+                    "
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid21 mb1">
+              <div class="card">
+                <div class="card-title">📉 24-Hour Trends</div>
+                <div class="chart-box"><canvas id="dash-chart"></canvas></div>
+              </div>
+              <div class="card">
+                <div class="card-title">🔔 Farm Alerts</div>
+                <div id="dash-alerts">
+                  <p class="muted">Loading alerts...</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">🧬 Nutrient Levels — N · P · K</div>
+              <div class="grid3">
+                <div>
+                  <div class="npk-row">
+                    <span>Nitrogen (N)</span><span id="d-n">-- mg/kg</span>
+                  </div>
+                  <div class="npk-track">
+                    <div
+                      class="npk-fill npk-n"
+                      id="d-n-bar"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="npk-row">
+                    <span>Phosphorus (P)</span><span id="d-p">-- mg/kg</span>
+                  </div>
+                  <div class="npk-track">
+                    <div
+                      class="npk-fill npk-p"
+                      id="d-p-bar"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="npk-row">
+                    <span>Potassium (K)</span><span id="d-k">-- mg/kg</span>
+                  </div>
+                  <div class="npk-track">
+                    <div
+                      class="npk-fill npk-k"
+                      id="d-k-bar"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ SENSORS ═══ -->
+          <div class="tab-pane" id="tab-sensors">
+            <div
+              id="hardware-section"
+              class="card"
+              style="
+                display: none;
+                border: 2px solid #2dd4bf;
+                background: linear-gradient(
+                  135deg,
+                  rgba(45, 212, 191, 0.08),
+                  rgba(45, 212, 191, 0.02)
+                );
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 1.2rem;
+                "
+              >
+                <div
+                  class="card-title"
+                  style="
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.6rem;
+                  "
+                >
+                  <span style="font-size: 20px; animation: pulse 2s infinite"
+                    >⚡</span
+                  >Hardware Sensors
+                </div>
+                <div
+                  id="hw-badge"
+                  style="
+                    background: linear-gradient(135deg, #22c55e, #16a34a);
+                    color: #fff;
+                    padding: 0.4rem 1rem;
+                    border-radius: 20px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    display: none;
+                    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+                    letter-spacing: 0.5px;
+                  "
+                >
+                  ✓ CONNECTED
+                </div>
+              </div>
+              <div
+                id="hw-status-box"
+                style="
+                  background: linear-gradient(135deg, #2a2a2a, #1f1f1f);
+                  padding: 1.2rem;
+                  border-radius: 10px;
+                  border: 1px solid #2dd4bf33;
+                  margin-bottom: 1rem;
+                  box-shadow: inset 0 1px 3px rgba(45, 212, 191, 0.1);
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 1.2rem;
+                  "
+                >
+                  <div id="hw-status-icon" style="font-size: 32px">🔌</div>
+                  <div>
+                    <div
+                      id="hw-status-text"
+                      style="font-weight: 700; font-size: 14px; color: #2dd4bf"
+                    >
+                      Disconnected
+                    </div>
+                    <div
+                      id="hw-status-sub"
+                      style="font-size: 12px; color: #aaa; margin-top: 0.3rem"
+                    >
+                      No hardware connected · Using simulated data
+                    </div>
+                  </div>
+                </div>
+                <div
+                  id="hw-readings"
+                  style="
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 0.8rem;
+                    margin-bottom: 0.5rem;
+                  "
+                ></div>
+              </div>
+              <div style="display: flex; gap: 0.6rem">
+                <button
+                  class="btn btn-pri flex1"
+                  onclick="scanHardware()"
+                  id="connect-btn"
+                  style="font-weight: 600; letter-spacing: 0.3px"
+                >
+                  📡 Connect Hardware
+                </button>
+                <button
+                  class="btn btn-sec flex1"
+                  onclick="disconnectHardware()"
+                  id="disconnect-btn"
+                  style="display: none; font-weight: 600; letter-spacing: 0.3px"
+                >
+                  ✕ Disconnect
+                </button>
+              </div>
+            </div>
+            <div id="sensor-grid" class="sensor-grid mb1"></div>
+            <div class="card">
+              <div class="card-title">📊 Sensor Comparison</div>
+              <div class="chart-box"><canvas id="sensor-chart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- ═══ WEATHER ═══ -->
+          <div class="tab-pane" id="tab-weather">
+            <div class="grid2 mb1">
+              <div class="card">
+                <div class="card-title">📍 Location</div>
+                <div class="fg">
+                  <label>Search City</label>
+                  <div class="row-gap">
+                    <input
+                      type="text"
+                      id="w-city"
+                      placeholder="Dehradun, Nainital, Delhi..."
+                    />
+                    <button class="btn btn-sec btn-sm" onclick="searchCity()">
+                      🔍 Find
+                    </button>
+                  </div>
+                  <div id="city-res" class="hint-text"></div>
+                </div>
+                <div class="divider-text">— or enter coordinates —</div>
+                <div class="grid2">
+                  <div class="fg">
+                    <label>Latitude</label
+                    ><input
+                      type="number"
+                      id="w-lat"
+                      value="29.500667"
+                      step="0.001"
+                    />
+                  </div>
+                  <div class="fg">
+                    <label>Longitude</label
+                    ><input
+                      type="number"
+                      id="w-lon"
+                      value="79.542889"
+                      step="0.001"
+                    />
+                  </div>
+                </div>
+                <div class="fg">
+                  <label>Days (1–16)</label
+                  ><input
+                    type="number"
+                    id="w-days"
+                    value="7"
+                    min="1"
+                    max="16"
+                  />
+                </div>
+                <div class="row-gap mt1">
+                  <button class="btn btn-sec" onclick="loadNow()">
+                    ⚡ Live Now
+                  </button>
+                  <button class="btn btn-pri flex1" onclick="loadForecast()">
+                    🌤️ Get Forecast
+                  </button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title">
+                  🌡️ Forecast —
+                  <span id="w-city-lbl" class="muted normal-weight"
+                    >Bageshwar</span
+                  >
+                </div>
+                <div id="w-result">
+                  <p class="muted center-text" style="padding: 3rem 0">
+                    Click "Get Forecast" for real weather · Open-Meteo API
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">📊 Temperature & Rain</div>
+              <div class="chart-box"><canvas id="w-chart"></canvas></div>
+            </div>
+          </div>
+
+          <!-- ═══ CROP ═══ -->
+          <div class="tab-pane" id="tab-crop">
+            <div class="grid2">
+              <div class="card">
+                <div class="card-title">🌾 Field Parameters</div>
+                <div class="grid2">
+                  <div class="fg">
+                    <label>Temperature °C</label
+                    ><input type="number" id="c-temp" value="22" step="0.1" />
+                  </div>
+                  <div class="fg">
+                    <label>Humidity %</label
+                    ><input type="number" id="c-hum" value="65" step="0.1" />
+                  </div>
+                  <div class="fg">
+                    <label>Soil Moisture %</label
+                    ><input type="number" id="c-moist" value="55" step="0.1" />
+                  </div>
+                  <div class="fg">
+                    <label>pH Level</label
+                    ><input type="number" id="c-ph" value="6.5" step="0.01" />
+                  </div>
+                  <div class="fg">
+                    <label>Nitrogen mg/kg</label
+                    ><input type="number" id="c-n" value="70" />
+                  </div>
+                  <div class="fg">
+                    <label>Phosphorus mg/kg</label
+                    ><input type="number" id="c-p" value="35" />
+                  </div>
+                  <div class="fg">
+                    <label>Potassium mg/kg</label
+                    ><input type="number" id="c-k" value="150" />
+                  </div>
+                </div>
+                <div class="row-gap mt1">
+                  <button class="btn btn-sec btn-sm" onclick="autofill()">
+                    ⚡ From Sensors
+                  </button>
+                  <button class="btn btn-pri flex1" onclick="doCrop()">
+                    🌾 Recommend Crop
+                  </button>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title">🤖 AI Recommendation</div>
+                <div id="crop-result">
+                  <p class="muted center-text" style="padding: 3rem 0">
+                    Fill parameters and click Recommend
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ DISEASE ═══ -->
+          <div class="tab-pane" id="tab-disease">
+            <div class="grid2 disease-grid">
+              <div class="card disease-input-card">
+                <div class="card-title">🔬 Leaf Analysis</div>
+                <div class="fg">
+                  <label>Crop Type</label>
+                  <select id="dis-crop">
+                    <option>Rice</option>
+                    <option>Wheat</option>
+                    <option selected>Tomato</option>
+                    <option>Potato</option>
+                    <option>Maize</option>
+                    <option>Cotton</option>
+                    <option>Sugarcane</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label>Leaf Image — Upload or Capture</label>
+                  <div class="upload-zone" id="uzone">
+                    <input
+                      type="file"
+                      id="dis-img"
+                      accept="image/*"
+                      onchange="previewImg(this)"
+                    />
+                    <div id="u-ph">
+                      <div class="upload-icon">🍃</div>
+                      <div class="upload-txt">
+                        Click or drag & drop<br /><small
+                          >JPG/PNG · Max 10MB</small
+                        >
+                      </div>
+                    </div>
+                    <img id="u-prev" class="upload-preview" />
+                    <video
+                      id="leaf-camera-video"
+                      autoplay
+                      muted
+                      playsinline
+                      style="
+                        display: none;
+                        width: 100%;
+                        min-height: 208px;
+                        border-radius: 7px;
+                        max-height: 240px;
+                        object-fit: cover;
+                      "
+                    ></video>
+                    <canvas
+                      id="leaf-camera-canvas"
+                      style="display: none"
+                    ></canvas>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem">
+                    <button
+                      class="btn btn-sec btn-sm"
+                      id="leaf-camera-start"
+                      onclick="startCamera()"
+                      style="flex: 1; font-size: 12px"
+                    >
+                      📷 Start Camera
+                    </button>
+                    <button
+                      class="btn btn-sec btn-sm"
+                      id="leaf-camera-stop"
+                      onclick="stopCamera()"
+                      style="display: none; flex: 1; font-size: 12px"
+                    >
+                      ✕ Stop
+                    </button>
+                    <button
+                      class="btn btn-pri btn-sm"
+                      id="leaf-camera-capture"
+                      onclick="captureSnapshot()"
+                      style="display: none; flex: 1; font-size: 12px"
+                    >
+                      📸 Capture
+                    </button>
+                  </div>
+                </div>
+                <div
+                  id="no-img-msg"
+                  style="
+                    font-size: 11px;
+                    color: var(--warn);
+                    margin-bottom: 0.5rem;
+                    display: none;
+                  "
+                >
+                  ⚠️ Upload a leaf image for accurate analysis
+                </div>
+                <button
+                  class="btn btn-pri btn-full"
+                  id="dis-btn"
+                  onclick="doDisease()"
+                >
+                  🔍 Analyse Image
+                </button>
+                <p
+                  style="
+                    font-size: 10px;
+                    color: var(--text3);
+                    margin-top: 0.4rem;
+                    text-align: center;
+                  "
+                >
+                  Same image will always give the same result
+                </p>
+              </div>
+              <div class="card disease-output-card">
+                <div class="card-title">📋 Detection Result</div>
+                <div id="disease-result" class="disease-result-panel">
+                  <div
+                    style="
+                      text-align: center;
+                      padding: 2rem 0;
+                      color: var(--text3);
+                    "
+                  >
+                    <div style="font-size: 32px; margin-bottom: 0.75rem">
+                      🍃
+                    </div>
+                    <div
+                      style="
+                        font-size: 13px;
+                        font-weight: 600;
+                        margin-bottom: 0.4rem;
+                      "
+                    >
+                      Upload a leaf photo to begin
+                    </div>
+                    <div style="font-size: 11px">
+                      The same image will always give the same result —<br />no
+                      random changes between analyses.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ SOIL ═══ -->
+          <div class="tab-pane" id="tab-soil">
+            <div class="grid2">
+              <div class="card">
+                <div class="card-title">🧪 Soil Parameters</div>
+                <div class="grid2">
+                  <div class="fg">
+                    <label>Nitrogen mg/kg</label
+                    ><input type="number" id="s-n" value="70" />
+                  </div>
+                  <div class="fg">
+                    <label>Phosphorus mg/kg</label
+                    ><input type="number" id="s-p" value="35" />
+                  </div>
+                  <div class="fg">
+                    <label>Potassium mg/kg</label
+                    ><input type="number" id="s-k" value="150" />
+                  </div>
+                  <div class="fg">
+                    <label>pH Level</label
+                    ><input type="number" id="s-ph" value="6.5" step="0.01" />
+                  </div>
+                  <div class="fg">
+                    <label>Organic Matter %</label
+                    ><input type="number" id="s-om" value="2.5" step="0.1" />
+                  </div>
+                </div>
+                <button class="btn btn-pri btn-full mt1" onclick="doSoil()">
+                  🔬 Analyse Soil
+                </button>
+              </div>
+              <div class="card">
+                <div class="card-title">📊 Soil Health Report</div>
+                <div id="soil-result">
+                  <p class="muted center-text" style="padding: 3rem 0">
+                    Enter parameters to generate report
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ FARM MAPS ═══ -->
+          <div class="tab-pane" id="tab-maps">
+            <div class="grid2 mb1">
+              <div class="card map-tools-card">
+                <div class="card-title">🗺️ Farm Location Tools</div>
+                <div class="map-tools">
+                  <button class="btn btn-pri btn-full" onclick="locateFarm()">
+                    📍 Use My Location
+                  </button>
+                  <div
+                    style="display: flex; gap: 0.5rem; flex-direction: column"
+                  >
+                    <button
+                      class="btn btn-sec btn-full"
+                      onclick="clearFarmMarkers()"
+                    >
+                      🗑 Clear All Farms
+                    </button>
+                    <div class="muted small" style="padding: 0.4rem 0 0 0">
+                      Or remove farms one-by-one from the list below.
+                    </div>
+                  </div>
+                </div>
+                <div class="fg">
+                  <label>Farm Name</label>
+                  <input
+                    type="text"
+                    id="farm-name"
+                    placeholder="e.g. North Ridge Farm"
+                  />
+                </div>
+                <div class="map-info-box">
+                  Double-click on the map to mark a farm manually. Each farm is
+                  saved in your browser. You can remove farms individually from
+                  the saved list.
+                </div>
+                <div class="farm-list-wrap">
+                  <div class="section-h" style="margin-top: 0">Saved Farms</div>
+                  <div id="farm-list" class="farm-list"></div>
+                </div>
+              </div>
+              <div class="card map-card">
+                <div class="card-title">📍 Live Map with Satellite View</div>
+                <div id="farm-map" class="farm-map"></div>
+                <div class="map-note">
+                  Layers: OpenStreetMap base view and free satellite imagery.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ ANALYTICS ═══ -->
+          <div class="tab-pane" id="tab-analytics">
+            <div class="grid21 mb1">
+              <div class="card">
+                <div class="card-title">📈 24-Hour Multi-Sensor Trends</div>
+                <div class="chart-box-lg">
+                  <canvas id="trend-chart"></canvas>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-title">🏆 Farm Health Score</div>
+                <div class="health-wrap">
+                  <canvas id="donut-chart" width="150" height="150"></canvas>
+                  <div class="health-num" id="health-num">--</div>
+                  <div class="health-lbl">Overall Health Index</div>
+                  <div class="health-bars">
+                    <div class="npk-row">
+                      <span>Moisture</span><span id="hs-moist">--%</span>
+                    </div>
+                    <div class="npk-track">
+                      <div
+                        class="npk-fill npk-p"
+                        id="hs-moist-b"
+                        style="width: 0%"
+                      ></div>
+                    </div>
+                    <div class="npk-row">
+                      <span>Humidity</span><span id="hs-hum">--%</span>
+                    </div>
+                    <div class="npk-track">
+                      <div
+                        class="npk-fill npk-n"
+                        id="hs-hum-b"
+                        style="width: 0%"
+                      ></div>
+                    </div>
+                    <div class="npk-row">
+                      <span>Temperature</span><span id="hs-temp">--°C</span>
+                    </div>
+                    <div class="npk-track">
+                      <div
+                        class="npk-fill npk-k"
+                        id="hs-temp-b"
+                        style="width: 0%"
+                      ></div>
+                    </div>
+                    <div class="npk-row">
+                      <span>pH Balance</span><span id="hs-ph">--</span>
+                    </div>
+                    <div class="npk-track">
+                      <div
+                        class="npk-fill"
+                        id="hs-ph-b"
+                        style="
+                          width: 0%;
+                          background: linear-gradient(90deg, #9333ea, #c084fc);
+                        "
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="log-header">
+                <div class="card-title" style="margin-bottom: 0">
+                  📋 Sensor Data Log
+                </div>
+                <div class="log-btns">
+                  <button class="btn btn-sec btn-sm" onclick="exportCSV()">
+                    ⬇ CSV
+                  </button>
+                  <button class="btn btn-sec btn-sm" onclick="exportJSON()">
+                    ⬇ JSON
+                  </button>
+                  <button class="btn btn-sec btn-sm" onclick="clearLog()">
+                    🗑 Clear
+                  </button>
+                </div>
+              </div>
+              <div class="scroll-x">
+                <table class="data-table" id="log-table">
+                  <thead>
+                    <tr>
+                      <th onclick="sortLog(0)">Time ⇅</th>
+                      <th onclick="sortLog(1)">Temp ⇅</th>
+                      <th onclick="sortLog(2)">Moisture ⇅</th>
+                      <th onclick="sortLog(3)">Humidity ⇅</th>
+                      <th onclick="sortLog(4)">pH ⇅</th>
+                      <th onclick="sortLog(5)">Light ⇅</th>
+                      <th onclick="sortLog(6)">N ⇅</th>
+                      <th onclick="sortLog(7)">P ⇅</th>
+                      <th onclick="sortLog(8)">K ⇅</th>
+                    </tr>
+                  </thead>
+                  <tbody id="log-body"></tbody>
+                </table>
+              </div>
+              <div class="log-footer">
+                <span id="log-count">0</span> readings · auto-updates every 60s
+                · Press 1–9 to switch tabs · R=refresh · E=export
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ FERTILIZER ADVISOR ═══ -->
+          <div class="tab-pane" id="tab-fertilizer">
+            <!-- Tab selector -->
+            <div class="fert-tabs mb1">
+              <button
+                class="fert-tab active"
+                onclick="switchFertTab('disease')"
+                id="ftab-disease"
+              >
+                🔬 From Disease Detection
+              </button>
+              <button
+                class="fert-tab"
+                onclick="switchFertTab('manual')"
+                id="ftab-manual"
+              >
+                🔍 Manual Search
+              </button>
+              <button
+                class="fert-tab"
+                onclick="switchFertTab('guide')"
+                id="ftab-guide"
+              >
+                📊 NPK Guide
+              </button>
+            </div>
+
+            <!-- Panel A: Disease-based -->
+            <div id="fpanel-disease">
+              <div class="grid2 mb1">
+                <div class="card">
+                  <div class="card-title">🌱 Live Soil NPK Levels</div>
+                  <div class="npk-live-grid">
+                    <div class="npk-live-item">
+                      <div class="npk-live-label">Nitrogen (N)</div>
+                      <div class="npk-live-val" id="fert-n-val">-- mg/kg</div>
+                      <div class="npk-track">
+                        <div
+                          class="npk-fill npk-n"
+                          id="fert-n-bar"
+                          style="width: 0%"
+                        ></div>
+                      </div>
+                    </div>
+                    <div class="npk-live-item">
+                      <div class="npk-live-label">Phosphorus (P)</div>
+                      <div class="npk-live-val" id="fert-p-val">-- mg/kg</div>
+                      <div class="npk-track">
+                        <div
+                          class="npk-fill npk-p"
+                          id="fert-p-bar"
+                          style="width: 0%"
+                        ></div>
+                      </div>
+                    </div>
+                    <div class="npk-live-item">
+                      <div class="npk-live-label">Potassium (K)</div>
+                      <div class="npk-live-val" id="fert-k-val">-- mg/kg</div>
+                      <div class="npk-track">
+                        <div
+                          class="npk-fill npk-k"
+                          id="fert-k-bar"
+                          style="width: 0%"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="fert-divider">🔬 Select Detected Disease</div>
+                  <div class="fg">
+                    <label
+                      >Disease (from Disease AI tab or select manually)</label
+                    >
+                    <select id="fert-disease" onchange="updateFertilizerTab()">
+                      <option value="Healthy">✅ Healthy — No disease</option>
+                      <option value="Powdery Mildew">Powdery Mildew</option>
+                      <option value="Leaf Spot">Leaf Spot</option>
+                      <option value="Rust">Rust</option>
+                      <option value="Blight">Blight</option>
+                      <option value="Wilt">Wilt</option>
+                      <option value="Bacterial_spot">Bacterial Spot</option>
+                      <option value="Early_blight">Early Blight</option>
+                      <option value="Late_blight">Late Blight</option>
+                      <option value="Leaf_Mold">Leaf Mold</option>
+                      <option value="Spider_mites">Spider Mites</option>
+                    </select>
+                  </div>
+                  <div
+                    id="fert-auto-notice"
+                    style="
+                      display: none;
+                      font-size: 11px;
+                      color: var(--accent);
+                      margin-bottom: 0.6rem;
+                      padding: 0.4rem 0.75rem;
+                      background: #f0fdf4;
+                      border-radius: 6px;
+                    "
+                  >
+                    🔁 Auto-filled from Disease AI detection
+                  </div>
+                  <button
+                    class="btn btn-pri btn-full"
+                    onclick="updateFertilizerTab()"
+                  >
+                    💊 Get Recommendations
+                  </button>
+                </div>
+                <div class="card">
+                  <div class="card-title">📋 Treatment & Fertilizer Plan</div>
+                  <div id="fert-result">
+                    <div
+                      style="
+                        text-align: center;
+                        padding: 2.5rem 0;
+                        color: var(--text3);
+                      "
+                    >
+                      <div style="font-size: 28px; margin-bottom: 0.6rem">
+                        💊
+                      </div>
+                      <div style="font-size: 13px; font-weight: 600">
+                        Select a disease and click Get Recommendations
+                      </div>
+                      <div style="font-size: 11px; margin-top: 0.4rem">
+                        Or run Disease AI first — result auto-fills here
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel B: Manual Search -->
+            <div id="fpanel-manual" style="display: none">
+              <div class="grid2 mb1">
+                <div class="card">
+                  <div class="card-title">🔍 Search Fertilizer Solution</div>
+                  <div class="fg">
+                    <label>Crop Type</label>
+                    <select id="ms-crop">
+                      <option value="">-- Select crop --</option>
+                      <option>Tomato</option>
+                      <option>Potato</option>
+                      <option>Rice</option>
+                      <option>Wheat</option>
+                      <option>Maize</option>
+                      <option>Cotton</option>
+                      <option>Sugarcane</option>
+                      <option>Pepper</option>
+                      <option>Onion</option>
+                      <option>Garlic</option>
+                      <option>Cabbage</option>
+                      <option>Cauliflower</option>
+                    </select>
+                  </div>
+                  <div class="fg">
+                    <label>Growth Stage</label>
+                    <select id="ms-stage">
+                      <option value="">-- Select stage --</option>
+                      <option>Seed / Germination</option>
+                      <option>Seedling (0-3 weeks)</option>
+                      <option>Vegetative (4-8 weeks)</option>
+                      <option>Flowering</option>
+                      <option>Fruiting / Pod fill</option>
+                      <option>Maturity / Harvest</option>
+                    </select>
+                  </div>
+                  <div class="fg">
+                    <label>Observed Symptoms</label>
+                    <select id="ms-symptom">
+                      <option value="">-- Select symptom --</option>
+                      <option>Yellow leaves (older first)</option>
+                      <option>Yellow leaves (younger first)</option>
+                      <option>Purple / red tint on leaves</option>
+                      <option>Brown leaf margins</option>
+                      <option>White powdery coating</option>
+                      <option>Brown / dark spots on leaves</option>
+                      <option>Orange / rust coloured patches</option>
+                      <option>Wilting despite adequate water</option>
+                      <option>Stunted growth</option>
+                      <option>Poor fruit / grain quality</option>
+                      <option>Root rot / dark roots</option>
+                      <option>No visible symptoms</option>
+                    </select>
+                  </div>
+                  <div class="fg">
+                    <label>Soil pH (optional)</label>
+                    <input
+                      type="number"
+                      id="ms-ph"
+                      placeholder="e.g. 6.5"
+                      step="0.1"
+                      min="4"
+                      max="9"
+                    />
+                  </div>
+                  <button
+                    class="btn btn-pri btn-full mt1"
+                    onclick="manualSearch()"
+                  >
+                    🔍 Find Solution
+                  </button>
+                </div>
+                <div class="card">
+                  <div class="card-title">💡 Recommended Solution</div>
+                  <div id="ms-result">
+                    <div
+                      style="
+                        text-align: center;
+                        padding: 2.5rem 0;
+                        color: var(--text3);
+                      "
+                    >
+                      <div style="font-size: 28px; margin-bottom: 0.6rem">
+                        🔍
+                      </div>
+                      <div style="font-size: 13px; font-weight: 600">
+                        Fill in the fields and search
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel C: NPK Guide -->
+            <div id="fpanel-guide" style="display: none">
+              <div class="card">
+                <div class="card-title">
+                  📊 Complete NPK Fertilizer Reference Guide
+                </div>
+                <div class="scroll-x">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Nutrient</th>
+                        <th>Deficiency Signs</th>
+                        <th>Best Fertilizers</th>
+                        <th>Dosage</th>
+                        <th>Best Timing</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><b style="color: #166534">Nitrogen (N)</b></td>
+                        <td>
+                          Yellowing old leaves, stunted growth, pale green
+                          colour
+                        </td>
+                        <td>
+                          Urea (46% N), Ammonium Nitrate (34%), DAP, CAN, FYM
+                        </td>
+                        <td>20–30 kg N/ha in 2–3 splits</td>
+                        <td>Basal + top dress at tillering / branching</td>
+                      </tr>
+                      <tr>
+                        <td><b style="color: #1e40af">Phosphorus (P)</b></td>
+                        <td>Purple/red tint, poor roots, delayed maturity</td>
+                        <td>
+                          SSP (16% P₂O₅), DAP (46%), Rock Phosphate, Bone Meal
+                        </td>
+                        <td>40–60 kg P₂O₅/ha at planting</td>
+                        <td>Incorporated at planting (immobile in soil)</td>
+                      </tr>
+                      <tr>
+                        <td><b style="color: #7c2d12">Potassium (K)</b></td>
+                        <td>
+                          Brown leaf margins, weak stems, poor fruit quality
+                        </td>
+                        <td>
+                          MOP (60% K₂O), SOP (50%), Potassium Schoenite, Wood
+                          Ash
+                        </td>
+                        <td>40–60 kg K₂O/ha split dose</td>
+                        <td>Basal + at flowering / fruit fill</td>
+                      </tr>
+                      <tr>
+                        <td><b style="color: #0f766e">Calcium (Ca)</b></td>
+                        <td>
+                          Tip burn, blossom end rot, distorted young leaves
+                        </td>
+                        <td>
+                          Gypsum, Calcium Nitrate, Agricultural Lime, Dolomite
+                        </td>
+                        <td>20–40 kg Ca/ha or foliar 0.5%</td>
+                        <td>Pre-planting + foliar at fruit stage</td>
+                      </tr>
+                      <tr>
+                        <td><b style="color: #7c3aed">Magnesium (Mg)</b></td>
+                        <td>
+                          Interveinal chlorosis (yellow between green veins)
+                        </td>
+                        <td>Epsom Salt (MgSO₄), Dolomite Lime, Kieserite</td>
+                        <td>10–20 kg/ha or 0.5% foliar spray</td>
+                        <td>When deficiency appears, foliar fastest</td>
+                      </tr>
+                      <tr>
+                        <td><b style="color: #b45309">Sulfur (S)</b></td>
+                        <td>Young leaves pale yellow, stunted growth</td>
+                        <td>SSP, Gypsum, Ammonium Sulfate, Elemental Sulfur</td>
+                        <td>20–40 kg S/ha at planting</td>
+                        <td>Basal application</td>
+                      </tr>
+                      <tr>
+                        <td><b style="color: #64748b">Zinc (Zn)</b></td>
+                        <td>
+                          Khaira disease, white bud, small leaves, bronze
+                          discoloration
+                        </td>
+                        <td>
+                          Zinc Sulfate (ZnSO₄ 21%), Chelated Zinc, EDTA-Zn
+                        </td>
+                        <td>25 kg ZnSO₄/ha or 0.5% foliar</td>
+                        <td>Soil before planting + foliar if acute</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══ AI ASSISTANT ═══ -->
+          <div class="tab-pane" id="tab-aichat">
+            <div class="chat-layout">
+              <!-- Sidebar -->
+              <div class="chat-sidebar card">
+                <div class="card-title">🤖 AgriBot</div>
+                <p
+                  style="
+                    font-size: 11px;
+                    color: var(--text3);
+                    margin-bottom: 1rem;
+                    line-height: 1.5;
+                  "
+                >
+                  AI farming assistant powered by <b>Google Gemini</b> &
+                  <b>Groq LLaMA</b>. Ask anything about crops, diseases,
+                  fertilizers, irrigation, or pest control.
+                </p>
+
+                <!-- Image upload for leaf analysis -->
+                <div class="card-title" style="margin-top: 0.5rem">
+                  📷 Leaf Image Analysis
+                </div>
+                <div
+                  class="leaf-upload-zone"
+                  id="leaf-upload-zone"
+                  onclick="document.getElementById('leaf-img-input').click()"
+                >
+                  <input
+                    type="file"
+                    id="leaf-img-input"
+                    accept="image/*"
+                    style="display: none"
+                    onchange="handleLeafImage(this)"
+                  />
+                  <div id="leaf-upload-placeholder">
+                    <div
+                      style="
+                        font-size: 28px;
+                        margin-bottom: 0.35rem;
+                        opacity: 0.4;
+                      "
+                    >
+                      🍃
+                    </div>
+                    <div style="font-size: 11px; color: var(--text3)">
+                      Click to upload leaf photo<br /><small
+                        >JPG/PNG — Gemini AI analyses it</small
+                      >
+                    </div>
+                  </div>
+                  <img
+                    id="leaf-preview-img"
+                    style="
+                      display: none;
+                      width: 100%;
+                      border-radius: 7px;
+                      max-height: 140px;
+                      object-fit: cover;
+                    "
+                  />
+                </div>
+                <div
+                  id="leaf-crop-row"
+                  style="display: none; margin-top: 0.5rem"
+                >
+                  <div class="fg" style="margin-bottom: 0.4rem">
+                    <label>Crop type</label>
+                    <select id="leaf-crop-select">
+                      <option value="unknown crop">Auto-detect</option>
+                      <option>Tomato</option>
+                      <option>Potato</option>
+                      <option>Rice</option>
+                      <option>Wheat</option>
+                      <option>Maize</option>
+                      <option>Cotton</option>
+                      <option>Pepper</option>
+                      <option>Sugarcane</option>
+                      <option>Onion</option>
+                    </select>
+                  </div>
+                  <button
+                    class="btn btn-pri btn-full btn-sm"
+                    onclick="analyseLeafImage()"
+                  >
+                    🔬 Analyse Leaf
+                  </button>
+                  <button
+                    class="btn btn-sec btn-full btn-sm"
+                    style="margin-top: 0.3rem"
+                    onclick="clearLeafImage()"
+                  >
+                    ✕ Remove Image
+                  </button>
+                </div>
+
+                <!-- Quick questions -->
+                <div class="chat-suggestions" style="margin-top: 0.85rem">
+                  <div class="chat-suggestion-title">Quick questions:</div>
+                  <button class="sugg-btn" onclick="askSuggestion(this)">
+                    What fertilizer for tomato early blight?
+                  </button>
+                  <button class="sugg-btn" onclick="askSuggestion(this)">
+                    How much urea for wheat per hectare?
+                  </button>
+                  <button class="sugg-btn" onclick="askSuggestion(this)">
+                    Signs of nitrogen deficiency in rice?
+                  </button>
+                  <button class="sugg-btn" onclick="askSuggestion(this)">
+                    Best pesticide for powdery mildew?
+                  </button>
+                  <button class="sugg-btn" onclick="askSuggestion(this)">
+                    When to irrigate potato crop?
+                  </button>
+                  <button class="sugg-btn" onclick="askSuggestion(this)">
+                    Organic treatment for leaf spot?
+                  </button>
+                </div>
+
+                <div style="margin-top: 0.85rem">
+                  <button
+                    class="btn btn-sec btn-sm btn-full"
+                    onclick="clearChat()"
+                  >
+                    🗑 Clear Chat
+                  </button>
+                </div>
+                <div
+                  style="
+                    margin-top: 0.65rem;
+                    font-size: 10px;
+                    color: var(--text3);
+                    line-height: 1.5;
+                  "
+                >
+                  Powered by <b>Google Gemini</b> & <b>Groq</b> · For critical
+                  decisions always consult a local agronomist or KVK
+                </div>
+              </div>
+
+              <!-- Chat main area -->
+              <div class="chat-main">
+                <div class="chat-messages" id="chat-messages">
+                  <div class="chat-msg bot">
+                    <div class="chat-avatar">🤖</div>
+                    <div class="chat-bubble">
+                      Hello! I'm <b>AgriBot</b>, your AI farming assistant. I
+                      can help you with: 🌿 <b>Disease identification</b> and
+                      treatment recommendations 💊 <b>Fertilizer advice</b> with
+                      specific product names and dosage 🗺️
+                      <b>Farm mapping</b> with live location and manual field
+                      markers 🐛 <b>Pest control</b> — chemical and organic
+                      options 📷 <b>Leaf image analysis</b> — upload a photo for
+                      instant diagnosis What would you like to know today?
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Typing indicator -->
+                <div id="chat-typing" class="chat-typing" style="display: none">
+                  <div class="chat-msg bot" style="margin: 0 1.25rem 0.5rem">
+                    <div class="chat-avatar">🤖</div>
+                    <div class="chat-bubble" style="padding: 0.6rem 0.9rem">
+                      <span class="typing-dots"
+                        ><span></span><span></span><span></span
+                      ></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Input area -->
+                <div class="chat-input-area">
+                  <div class="chat-input-row">
+                    <textarea
+                      id="chat-input"
+                      placeholder="Ask about crops, diseases, fertilizers, or farm maps..."
+                      rows="1"
+                      onkeydown="chatKeyDown(event)"
+                      oninput="autoResize(this)"
+                    ></textarea>
+                    <button
+                      class="chat-send-btn"
+                      id="chat-voice"
+                      onclick="toggleVoiceInput()"
+                      title="Voice Command"
+                      aria-label="Voice Command"
+                    >
+                      🎤
+                    </button>
+                    <button
+                      class="chat-send-btn"
+                      id="chat-send"
+                      onclick="sendChat()"
+                      title="Send (Enter)"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      >
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div
+                    style="
+                      font-size: 10px;
+                      color: var(--text3);
+                      margin-top: 0.3rem;
+                    "
+                  >
+                    Enter to send · Shift+Enter for new line · 🎤 Voice command
+                    via Vosk · 📷 Upload leaf photo for disease analysis
+                  </div>
+                  <div
+                    id="chat-voice-status"
+                    style="
+                      font-size: 10px;
+                      color: var(--text3);
+                      margin-top: 0.15rem;
+                      min-height: 14px;
+                    "
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /content -->
+      </div>
+      <!-- /main -->
+    </div>
+    <!-- /shell -->
+
+    <script src="/static/js/main.js?v=20260426104500"></script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      crossorigin=""
+    ></script>
+    <script>
+      // Wait a bit for main.js to load, then call initApp if it exists
+      setTimeout(function () {
+        console.log("[INIT] Timeout fired, checking for initApp...");
+        if (typeof initApp === "function") {
+          console.log("[INIT] Found initApp, calling it now");
+          initApp().catch(function (e) {
+            console.error("[INIT] initApp error:", e);
+          });
+        } else {
+          console.error("[INIT] initApp not found after main.js load");
+        }
+      }, 500);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+# Optional — install these only if you have trained model files in models/
+scikit-learn==1.3.2
+joblib==1.3.2
+numpy==1.24.3
+pandas==2.0.3
+Pillow==10.1.0
+
+# Deep learning (only needed for disease_model.h5)
+# tensorflow==2.13.0
+
+# Speech recognition (optional voice commands in AI Assistant)
+vosk==0.3.45
