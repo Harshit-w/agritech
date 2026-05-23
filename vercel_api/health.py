@@ -1,14 +1,16 @@
 import json
+from flask import Flask, jsonify
 
-def handler(request):
+app = Flask("vercel_health")
+
+
+@app.route("/", methods=["GET"])
+def _health():
     body = {"status": "ok", "service": "AgriTech (serverless)", "timestamp": None}
     try:
         import time
         body["timestamp"] = time.time()
     except Exception:
         body["timestamp"] = None
-    return {
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps(body),
-    }
+    return jsonify(body)
+

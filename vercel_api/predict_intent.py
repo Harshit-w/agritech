@@ -1,8 +1,13 @@
 import json
+from flask import Flask, jsonify, request
 
-def handler(request):
+app = Flask("vercel_predict_intent")
+
+
+@app.route("/", methods=["POST"])
+def _predict_intent():
     try:
-        body = request.json() if callable(getattr(request, 'json', None)) else json.loads(request.body.decode())
+        body = request.get_json() or {}
     except Exception:
         body = {}
     try:
@@ -10,6 +15,7 @@ def handler(request):
         text = body.get('text', '')
         lang = body.get('language', 'en')
         r = classify_intent(text, language=lang)
-        return {"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": json.dumps(r)}
+        return jsonify(r)
     except Exception as e:
-        return {"statusCode": 503, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error":"intent_unavailable","detail": str(e)})}
+        return jsonify({"error": "intent_unavailable", "detail": str(e)}), 503
+

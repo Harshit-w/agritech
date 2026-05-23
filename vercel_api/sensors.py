@@ -1,4 +1,8 @@
 import json
+from flask import Flask, jsonify
+
+app = Flask("vercel_sensors")
+
 
 def _safe_call_get_sensor_readings():
     try:
@@ -7,11 +11,11 @@ def _safe_call_get_sensor_readings():
     except Exception as e:
         return {"error": "sensor_unavailable", "detail": str(e)}
 
-def handler(request):
+
+@app.route("/", methods=["GET"])
+def _sensors():
     data = _safe_call_get_sensor_readings()
-    status = 200 if "error" not in data else 503
-    return {
-        "statusCode": status,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps(data),
-    }
+    if "error" in data:
+        return jsonify(data), 503
+    return jsonify(data)
+
